@@ -1,5 +1,6 @@
 ARG REPOSITORY="docker.io"
-FROM ${REPOSITORY}/library/debian:trixie-20251020-slim
+FROM ${REPOSITORY}/library/debian:bookworm-20250224-slim
+#upgrade to trixie when software-properties-common are available for trixie
 
 LABEL MAINTAINER=deb4sh@github
 LABEL org.opencontainers.image.source=https://github.com/deB4SH/KubernetesAzureAgent
