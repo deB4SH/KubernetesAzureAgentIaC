@@ -1,4 +1,5 @@
-FROM debian:trixie-20251020-slim
+ARG REPOSITORY="docker.io"
+FROM ${REPOSITORY}/library/debian:trixie-20251020-slim
 
 LABEL MAINTAINER=deb4sh@github
 LABEL org.opencontainers.image.source=https://github.com/deB4SH/KubernetesAzureAgent
