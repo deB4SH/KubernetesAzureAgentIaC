@@ -1,4 +1,4 @@
-FROM debian:bookworm-20250224-slim
+FROM debian:trixie-20251020-slim
 
 LABEL MAINTAINER=deb4sh@github
 LABEL org.opencontainers.image.source=https://github.com/deB4SH/KubernetesAzureAgent
