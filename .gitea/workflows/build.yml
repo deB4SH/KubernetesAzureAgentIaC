@@ -1,44 +1,15 @@
-name: build
+name: docker-build
 
 on:
   push:
     branches:
       - main
+
 jobs:
-  build-main:
-    runs-on: ubuntu-latest
-    container:
-      image: catthehacker/ubuntu:act-latest
-    env:
-      DOCKER_ORG: hotbird.docker.nexus.macslabs.de/docker
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # all history for all branches and tags
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker BuildX
-        uses: docker/setup-buildx-action@v3
-      - name: Get Meta
-        id: meta
-        run: |
-          echo REPO_NAME=$(echo ${GITHUB_REPOSITORY} | awk -F"/" '{print tolower($2)}') >> $GITHUB_OUTPUT
-          echo REPO_VERSION=${GITHUB_REF_NAME#v} >> $GITHUB_OUTPUT
-          echo SHA_SHORT=$(git rev-parse --short HEAD) >> $GITHUB_OUTPUT
-      - name: Login to hotbird Docker Registry
-        uses: docker/login-action@v3
-        with:
-          registry: hotbird.docker.nexus.macslabs.de
-          username: ${{ secrets.DR_HOTBIRD_USER }}
-          password: ${{ secrets.DR_HOTBIRD_PASSWORD }}
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./src/docker/Dockerfile
-          platforms: |
-            linux/amd64
-          push: true
-          tags: |
-            ${{ env.DOCKER_ORG }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.SHA_SHORT }}
+  package-and-deploy:
+    uses: Public-Actions/docker-build-and-publish/.gitea/workflows/build.yml@release/1.0.0
+    secrets: inherit
+    with:
+      docker_org: abell.registry.macslabs.de/docker
+      build_context: ./src/docker
+      build_file: ./src/docker/Dockerfile
