@@ -11,5 +11,5 @@ jobs:
     secrets: inherit
     with:
       docker_org: abell.registry.macslabs.de/docker
-      build_context: ./src/docker
+      build_context: ./
       build_file: ./src/docker/Dockerfile
