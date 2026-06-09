@@ -1,9 +1,9 @@
 ARG REPOSITORY="docker.io"
-FROM ${REPOSITORY}/library/debian:bookworm-20250224-slim
+FROM ${REPOSITORY}/library/debian:trixie-20260518-slim
 #upgrade to trixie when software-properties-common are available for trixie
 
 LABEL MAINTAINER=deb4sh@github
-LABEL org.opencontainers.image.source=https://github.com/deB4SH/KubernetesAzureAgent
+LABEL org.opencontainers.image.source=https://github.com/deB4SH/KubernetesAzureAgentIaC
 
 # Can be 'linux-x64', 'linux-arm64', 'linux-arm', 'rhel.6-x64'.
 ENV TARGETARCH=linux-x64
@@ -29,7 +29,6 @@ RUN apt-get update && apt-get upgrade -y \
     jq \
     lsb-release \
     gnupg \
-    software-properties-common \
     gettext-base \
     unzip \
     wget
@@ -38,43 +37,22 @@ RUN apt-get update && apt-get upgrade -y \
 RUN   curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" --output-dir /usr/local/bin \
     && chmod +x /usr/local/bin/kubectl
 
+#Install Terraform
+RUN wget https://releases.hashicorp.com/terraform/1.15.5/terraform_1.15.5_linux_amd64.zip \
+    && unzip terraform_1.15.5_linux_amd64.zip -d terraform_1.15.5_linux_amd64  \
+    && mv terraform_1.15.5_linux_amd64/terraform /usr/local/bin/terraform \
+    && chmod +x /usr/local/bin/terraform
 
-#Install KubeSeal
-RUN curl -L https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.19.4/kubeseal-0.19.4-linux-amd64.tar.gz -o kubeseal-0.19.4-linux-amd64.tar.gz \
-    && tar xfv kubeseal-0.19.4-linux-amd64.tar.gz -C /usr/local/bin
 
-#Install Helm & Helm-Diff & Helmfile
-ENV HELM_PLUGINS="/home/worker/.local/helm-plugin"
-RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 \
-    && chmod 700 get_helm.sh \
-    && sh -c ./get_helm.sh \
-    && helm plugin install https://github.com/databus23/helm-diff \
-    && chown -R worker:worker /home/worker/.local/helm-plugin \
-    && curl -L https://github.com/helmfile/helmfile/releases/download/v0.166.0/helmfile_0.166.0_linux_amd64.tar.gz -o  helmfile_0.166.0_linux_amd64.tar.gz \
-    && tar xfv helmfile_0.166.0_linux_amd64.tar.gz -C /usr/local/bin
-
-#Install argocd cli
-RUN curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64 && \
-    install -m 555 argocd-linux-amd64 /usr/local/bin/argocd && \
-    rm argocd-linux-amd64
-
-#Install Kustomize
-RUN curl -L https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.0.0/kustomize_v5.0.0_linux_amd64.tar.gz -o kustomize_v5.0.0_linux_amd64.tar.gz && \
-    tar xfv kustomize_v5.0.0_linux_amd64.tar.gz -C /usr/local/bin
-
-#Install java and maven
-RUN apt install openjdk-17-jdk maven -y
-
-#install dependencies for dotNetcore & Install DotNet
-RUN wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
-    && dpkg -i packages-microsoft-prod.deb \
-    && rm packages-microsoft-prod.deb \
+#Install OpenTofu
+RUN install -m 0755 -d /etc/apt/keyrings \
+    && curl -fsSL https://get.opentofu.org/opentofu.gpg | tee /etc/apt/keyrings/opentofu.gpg >/dev/null \
+    && curl -fsSL https://packages.opentofu.org/opentofu/tofu/gpgkey | gpg --no-tty --batch --dearmor -o /etc/apt/keyrings/opentofu-repo.gpg >/dev/null \
+    && chmod a+r /etc/apt/keyrings/opentofu.gpg /etc/apt/keyrings/opentofu-repo.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/opentofu.gpg,/etc/apt/keyrings/opentofu-repo.gpg] https://packages.opentofu.org/opentofu/tofu/any/ any main" >> /etc/apt/sources.list.d/opentofu.list \
+    && chmod a+r /etc/apt/sources.list.d/opentofu.list \
     && apt-get update \
-    && apt install -y libssl3 libkrb5-3 zlib1g debsums icu-devtools libicu-dev icu-doc libicu72 \
-    && apt-get install -y dotnet-sdk-8.0
-
-#Install AzureCli
-RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+    && apt-get install -y tofu
 
 WORKDIR /azp
 
@@ -87,6 +65,10 @@ RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /tmp/* \
     && rm -rf /var/tmp/*
+
+#check runtimes
+RUN tofu -version \
+    && terraform -version
 
 USER worker
 ENTRYPOINT [ "./entrypoint.sh", "-f", "/azp/init" ]
