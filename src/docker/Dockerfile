@@ -55,12 +55,11 @@ RUN install -m 0755 -d /etc/apt/keyrings \
     && apt-get install -y tofu
 
 #install dependencies for dotNetcore & Install DotNet
-RUN wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
-    && dpkg -i packages-microsoft-prod.deb \
+RUN wget https://packages.microsoft.com/config/debian/13/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
+    &&  dpkg -i packages-microsoft-prod.deb \
     && rm packages-microsoft-prod.deb \
     && apt-get update \
-    && apt install -y libssl3 libkrb5-3 zlib1g debsums icu-devtools libicu-dev icu-doc libicu72 \
-    && apt-get install -y dotnet-sdk-8.0
+    && apt-get install -y dotnet-sdk-10.0
 
 WORKDIR /azp
 
