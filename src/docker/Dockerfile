@@ -43,7 +43,6 @@ RUN wget https://releases.hashicorp.com/terraform/1.15.5/terraform_1.15.5_linux_
     && mv terraform_1.15.5_linux_amd64/terraform /usr/local/bin/terraform \
     && chmod +x /usr/local/bin/terraform
 
-
 #Install OpenTofu
 RUN install -m 0755 -d /etc/apt/keyrings \
     && curl -fsSL https://get.opentofu.org/opentofu.gpg | tee /etc/apt/keyrings/opentofu.gpg >/dev/null \
@@ -53,6 +52,11 @@ RUN install -m 0755 -d /etc/apt/keyrings \
     && chmod a+r /etc/apt/sources.list.d/opentofu.list \
     && apt-get update \
     && apt-get install -y tofu
+
+#Install Helm
+RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 \
+    && chmod 700 get_helm.sh \
+    && sh -c ./get_helm.sh
 
 #install dependencies for dotNetcore & Install DotNet
 RUN wget https://packages.microsoft.com/config/debian/13/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
