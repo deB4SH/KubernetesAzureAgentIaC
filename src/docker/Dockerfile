@@ -26,16 +26,22 @@ RUN apt-get update && apt-get upgrade -y \
     curl \
     git \
     iputils-ping \
-    jq \
     lsb-release \
     gnupg \
     gettext-base \
     unzip \
-    wget \
-    yq
+    wget
+
+# Install JQ and YQ
+RUN wget https://github.com/mikefarah/yq/releases/download/v4.53.3/yq_linux_amd64 -O /usr/local/bin/yq \
+    && chmod +x /usr/local/bin/yq \
+    && yq --version \
+    && wget https://github.com/jqlang/jq/releases/download/jq-1.8.2/jq-linux-amd64 -O /usr/local/bin/jq \
+    && chmod +x /usr/local/bin/jq \
+    && jq --version
 
 #Install Kubernetes
-RUN   curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" --output-dir /usr/local/bin \
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" --output-dir /usr/local/bin \
     && chmod +x /usr/local/bin/kubectl
 
 #Install Terraform
