@@ -1,5 +1,5 @@
 ARG REPOSITORY="docker.io"
-FROM ${REPOSITORY}/library/debian:trixie-20260518-slim
+FROM ${REPOSITORY}/library/debian:forky-20261005-slim
 #upgrade to trixie when software-properties-common are available for trixie
 
 LABEL MAINTAINER=deb4sh@github
